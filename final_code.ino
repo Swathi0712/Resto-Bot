@@ -24,8 +24,8 @@ char keys[ROW_NUM][COLUMN_NUM] = {
   {'*', '0', '#'}
 };
 
-byte pin_rows[ROW_NUM] = {5, 17, 16,4}; // GIOP18, GIOP5, GIOP17, GIOP16 connect to the row pins
-byte pin_column[COLUMN_NUM] = {0, 2, 15};  // GIOP4, GIOP0, GIOP2 connect to the column pins
+byte pin_rows[ROW_NUM] = {5, 17, 16,4}; // GIOP5, GIOP17, GIOP16, GIOP4 connect to the row pins
+byte pin_column[COLUMN_NUM] = {0, 2, 15};  // GIOP0, GIOP2, GIOP15 connect to the column pins
 
 Keypad keypad = Keypad( makeKeymap(keys), pin_rows, pin_column, ROW_NUM, COLUMN_NUM );
 
@@ -94,7 +94,7 @@ void forward()
   
 void stop1()
 {
-     Serial.print("stop");
+    Serial.print("stop");
     digitalWrite(in1, HIGH);
     digitalWrite(in2, HIGH);
     digitalWrite(in3, HIGH);
@@ -169,7 +169,6 @@ void forward1()
 
 void backward()
 { 
-  Serial.print("hww");
   come3:
   if ( ! mfrc522.PICC_IsNewCardPresent()) 
   { 

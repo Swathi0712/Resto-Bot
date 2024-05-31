@@ -1,0 +1,65 @@
+#include <AccelStepper.h>
+#include <SoftwareSerial.h>
+
+#define dirPin 6
+#define stepPin 7
+#define dirPin1 10
+#define stepPin1 9
+#define motorInterfaceType 1
+AccelStepper stepper = AccelStepper(motorInterfaceType, stepPin, dirPin);//nema23
+AccelStepper stepper1 = AccelStepper(motorInterfaceType, stepPin1, dirPin1);//nema17
+
+void setup() {
+  // initialize digital pin LED_BUILTIN as an output.
+Serial.begin(9600);
+pinMode(12,OUTPUT);
+digitalWrite(12,LOW);
+stepper.setMaxSpeed(1000);
+stepper.setAcceleration(500);
+Serial.begin(9600);
+stepper1.setMaxSpeed(1000);
+stepper1.setAcceleration(500);
+}
+
+// the loop function runs over and over again forever
+void loop() {
+int sensorValue = analogRead(A1);
+float voltage= sensorValue * (5.0 / 1023.0);
+Serial.println(voltage);
+delay(1000);
+while(voltage<=3)
+{
+  digitalWrite(12,LOW);
+}
+if(voltage>3.0)
+{
+  delay(20000);
+  stepper1.moveTo(-12000);
+  stepper1.runToPosition();
+  delay(1000);
+
+ stepper.moveTo(10000);
+ stepper.runToPosition();
+ delay(1000);
+
+ stepper1.moveTo(0);
+ stepper1.runToPosition();
+ delay(3000);
+  
+  digitalWrite(12,HIGH);
+
+  delay(10000);
+  stepper.moveTo(0); 
+  stepper.runToPosition();
+  delay(1000);
+
+   //delay(2000);
+  //stepper.moveTo(0); 
+  //stepper.runToPosition();
+  //delay(1000);
+  
+}
+
+  exit(0);
+
+}
