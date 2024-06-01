@@ -6,11 +6,11 @@
 #define dirPin1 10
 #define stepPin1 9
 #define motorInterfaceType 1
-AccelStepper stepper = AccelStepper(motorInterfaceType, stepPin, dirPin);//nema23
-AccelStepper stepper1 = AccelStepper(motorInterfaceType, stepPin1, dirPin1);//nema17
+AccelStepper stepper = AccelStepper(motorInterfaceType, stepPin, dirPin); //nema23
+AccelStepper stepper1 = AccelStepper(motorInterfaceType, stepPin1, dirPin1); //nema17
 
 void setup() {
-  // initialize digital pin LED_BUILTIN as an output.
+// initialize digital pin LED_BUILTIN as an output.
 Serial.begin(9600);
 pinMode(12,OUTPUT);
 digitalWrite(12,LOW);

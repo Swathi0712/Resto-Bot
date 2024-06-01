@@ -272,10 +272,7 @@ void loop()
      content.concat(String(mfrc522.uid.uidByte[i], HEX));
   }
 
-  //Serial.println();
-  //Serial.print("Message : ");
   content.toUpperCase();
-  //Serial.print(content);
 
   if(content.substring(1)=="9D F6 61 3A")
   {
