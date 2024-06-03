@@ -1,22 +1,50 @@
-uint timer =0;
+/**
+ * ESP to Arduino Communication
+ * 
+ * This code controls an output signal based on input from another pin.
+ * It demonstrates basic communication between ESP32 and Arduino.
+ */
+
+// Global variables
+unsigned int cycleTimer = 0;  // Timer for tracking cycles
+
+// Pin definitions
+const int OUTPUT_SIGNAL_PIN = 12;  // Digital pin to send signal to Arduino
+const int INPUT_SENSOR_PIN = 34;   // Digital pin to read sensor data
+
+// Timing settings
+const int SIGNAL_ON_DURATION = 1000;   // Duration to keep signal HIGH in milliseconds
+const int SIGNAL_OFF_DURATION = 5000;  // Duration to keep signal LOW in milliseconds when triggered
+const int CHECK_DELAY = 1000;          // Delay between checks in milliseconds
+
 void setup() {
+  // Initialize serial communication at 9600 baud rate
   Serial.begin(9600);
-  pinMode(12, OUTPUT);    // sets the digital pin 5 as output
-  pinMode(34,INPUT);
+  
+  // Configure the output and input pins
+  pinMode(OUTPUT_SIGNAL_PIN, OUTPUT);  // Set output pin
+  pinMode(INPUT_SENSOR_PIN, INPUT);    // Set input pin
 }
 
 void loop() {
- digitalWrite(12, HIGH); // sets the digital pin 13 on
- delay(1000);
-//  int val=digitalRead(15);
- if(digitalRead(34)==HIGH){
-   digitalWrite(12,LOW);
-   Serial.println("12 OFF");
-   delay(5000);
- }
-//  digitalWrite(12,HIGH);
- delay(1000);
-// digitalWrite(5,LOW);
-// delay(1000);
-          // waits for a second
+  // Set output signal HIGH
+  digitalWrite(OUTPUT_SIGNAL_PIN, HIGH);
+  
+  // Wait for specified delay
+  delay(SIGNAL_ON_DURATION);
+  
+  // Check if input sensor is HIGH
+  if (digitalRead(INPUT_SENSOR_PIN) == HIGH) {
+    // Set output signal LOW
+    digitalWrite(OUTPUT_SIGNAL_PIN, LOW);
+    
+    // Log to serial monitor
+    Serial.println("12 OFF");
+    
+    // Wait for specified off duration
+    delay(SIGNAL_OFF_DURATION);
+  }
+  
+  // Wait for check delay before next cycle
+  delay(CHECK_DELAY);
 }

@@ -1,65 +1,122 @@
-#include <AccelStepper.h>
-#include <SoftwareSerial.h>
+/**
+ * Restaurant Bot Stepper Motor Control
+ * 
+ * This code controls two stepper motors based on an analog sensor reading.
+ * It's used for mechanical operations like opening compartments or lifting trays
+ * in the restaurant service robot.
+ * 
+ * Components used:
+ * - NEMA23 stepper motor (main movement)
+ * - NEMA17 stepper motor (secondary movement)
+ * - Analog sensor (trigger for operations)
+ */
 
-#define dirPin 6
-#define stepPin 7
-#define dirPin1 10
-#define stepPin1 9
-#define motorInterfaceType 1
-AccelStepper stepper = AccelStepper(motorInterfaceType, stepPin, dirPin); //nema23
-AccelStepper stepper1 = AccelStepper(motorInterfaceType, stepPin1, dirPin1); //nema17
-
-void setup() {
-// initialize digital pin LED_BUILTIN as an output.
-Serial.begin(9600);
-pinMode(12,OUTPUT);
-digitalWrite(12,LOW);
-stepper.setMaxSpeed(1000);
-stepper.setAcceleration(500);
-Serial.begin(9600);
-stepper1.setMaxSpeed(1000);
-stepper1.setAcceleration(500);
-}
-
-// the loop function runs over and over again forever
-void loop() {
-int sensorValue = analogRead(A1);
-float voltage= sensorValue * (5.0 / 1023.0);
-Serial.println(voltage);
-delay(1000);
-while(voltage<=3)
-{
-  digitalWrite(12,LOW);
-}
-if(voltage>3.0)
-{
-  delay(20000);
-  stepper1.moveTo(-12000);
-  stepper1.runToPosition();
-  delay(1000);
-
- stepper.moveTo(10000);
- stepper.runToPosition();
- delay(1000);
-
- stepper1.moveTo(0);
- stepper1.runToPosition();
- delay(3000);
-  
-  digitalWrite(12,HIGH);
-
-  delay(10000);
-  stepper.moveTo(0); 
-  stepper.runToPosition();
-  delay(1000);
-
-   //delay(2000);
-  //stepper.moveTo(0); 
-  //stepper.runToPosition();
-  //delay(1000);
-  
-}
-
-  exit(0);
-
-}
+ #include <AccelStepper.h>
+ #include <SoftwareSerial.h>
+ 
+ // Stepper motor pin definitions
+ #define MAIN_STEPPER_DIR_PIN 6       // Direction pin for NEMA23 stepper
+ #define MAIN_STEPPER_STEP_PIN 7      // Step pin for NEMA23 stepper
+ #define SECONDARY_STEPPER_DIR_PIN 10 // Direction pin for NEMA17 stepper
+ #define SECONDARY_STEPPER_STEP_PIN 9 // Step pin for NEMA17 stepper
+ #define STEPPER_INTERFACE_TYPE 1     // Driver interface type
+ 
+ // Create stepper motor instances
+ AccelStepper mainStepper = AccelStepper(STEPPER_INTERFACE_TYPE, MAIN_STEPPER_STEP_PIN, MAIN_STEPPER_DIR_PIN);       // NEMA23
+ AccelStepper secondaryStepper = AccelStepper(STEPPER_INTERFACE_TYPE, SECONDARY_STEPPER_STEP_PIN, SECONDARY_STEPPER_DIR_PIN); // NEMA17
+ 
+ // Pin and sensor configuration
+ const int CONTROL_SIGNAL_PIN = 12;    // Digital output control signal pin
+ const int ANALOG_SENSOR_PIN = A1;     // Analog input sensor pin
+ 
+ // Threshold and movement settings
+ const float VOLTAGE_THRESHOLD = 3.0;  // Threshold voltage to trigger stepper movement
+ const int INITIAL_DELAY = 20000;      // Initial delay before operation starts (milliseconds)
+ const int INTER_MOVE_DELAY = 1000;    // Delay between stepper operations (milliseconds)
+ const int EXTENDED_DELAY = 3000;      // Longer delay for specific operations (milliseconds)
+ const int FINAL_DELAY = 10000;        // Final delay after completion (milliseconds)
+ 
+ // Stepper motor movement parameters
+ const int SECONDARY_EXTENDED_POSITION = -12000; // Extended position for secondary stepper
+ const int MAIN_EXTENDED_POSITION = 10000;       // Extended position for main stepper
+ const int HOME_POSITION = 0;                    // Home position for both steppers
+ 
+ // Stepper speed and acceleration settings
+ const int MAX_SPEED = 1000;         // Maximum speed for steppers
+ const int ACCELERATION = 500;       // Acceleration rate for steppers
+ 
+ void setup() {
+   // Initialize serial communication at 9600 baud rate
+   Serial.begin(9600);
+   
+   // Configure the control signal pin
+   pinMode(CONTROL_SIGNAL_PIN, OUTPUT);
+   digitalWrite(CONTROL_SIGNAL_PIN, LOW); // Ensure it starts LOW
+   
+   // Configure main stepper motor parameters
+   mainStepper.setMaxSpeed(MAX_SPEED);
+   mainStepper.setAcceleration(ACCELERATION);
+   
+   // Configure secondary stepper motor parameters
+   secondaryStepper.setMaxSpeed(MAX_SPEED);
+   secondaryStepper.setAcceleration(ACCELERATION);
+ }
+ 
+ void loop() {
+   // Read analog sensor value (range 0-1023)
+   int sensorValue = analogRead(ANALOG_SENSOR_PIN);
+   
+   // Convert sensor value to voltage (0-5V range)
+   float voltage = sensorValue * (5.0 / 1023.0);
+   
+   // Send voltage value to serial monitor
+   Serial.println(voltage);
+   
+   // Wait for 1 second before next reading
+   delay(1000);
+   
+   // Stay in this loop if voltage is below threshold
+   while (voltage <= VOLTAGE_THRESHOLD) {
+     // Keep control signal LOW
+     digitalWrite(CONTROL_SIGNAL_PIN, LOW);
+     
+     // Re-read sensor value
+     sensorValue = analogRead(ANALOG_SENSOR_PIN);
+     voltage = sensorValue * (5.0 / 1023.0);
+   }
+   
+   // If voltage exceeds threshold, execute sequence
+   if (voltage > VOLTAGE_THRESHOLD) {
+     // Initial delay before starting operations
+     delay(INITIAL_DELAY);
+     
+     // Step 1: Move the secondary stepper to extended position
+     secondaryStepper.moveTo(SECONDARY_EXTENDED_POSITION);
+     secondaryStepper.runToPosition();
+     delay(INTER_MOVE_DELAY);
+     
+     // Step 2: Move the main stepper to extended position
+     mainStepper.moveTo(MAIN_EXTENDED_POSITION);
+     mainStepper.runToPosition();
+     delay(INTER_MOVE_DELAY);
+     
+     // Step 3: Return secondary stepper to home position
+     secondaryStepper.moveTo(HOME_POSITION);
+     secondaryStepper.runToPosition();
+     delay(EXTENDED_DELAY);
+     
+     // Step 4: Set control signal HIGH
+     digitalWrite(CONTROL_SIGNAL_PIN, HIGH);
+     
+     // Wait for final delay
+     delay(FINAL_DELAY);
+     
+     // Step 5: Return main stepper to home position
+     mainStepper.moveTo(HOME_POSITION);
+     mainStepper.runToPosition();
+     delay(INTER_MOVE_DELAY);
+   }
+   
+   // Exit program after completing the sequence
+   exit(0);
+ }
